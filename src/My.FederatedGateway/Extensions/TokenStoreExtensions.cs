@@ -7,7 +7,7 @@ namespace My.FederatedGateway.Extensions
     {
         public static IServiceCollection AddTokenStore(this IServiceCollection services)
         {
-            services.AddScoped<ITokenStore, MyTokenStore>();
+            services.AddScoped<ITokenStore, MySessionTokenStore>();
             return services;
         }
     }

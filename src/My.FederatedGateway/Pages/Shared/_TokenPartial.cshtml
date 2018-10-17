@@ -1,16 +1,17 @@
 ﻿@using My.FederatedGateway.Services
 @inject ITokenStore tokenStore
 @using IdentityServer4.Extensions
-@{
+@{ 
+    var tokens = tokenStore.Tokens;
     string name = null;
     if (!true.Equals(ViewData["signed-out"]))
     {
         name = Context.User?.GetDisplayName();
     }
 }
-@if (!string.IsNullOrWhiteSpace(name))
+@if (tokens != null && !string.IsNullOrWhiteSpace(name))
 {
-    var tokens = tokenStore.Tokens;
+   
 
 
     <div class="panel panel-default">

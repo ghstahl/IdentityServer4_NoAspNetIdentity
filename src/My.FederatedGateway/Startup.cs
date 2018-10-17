@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using IdentityServer4;
 using IdentityServer4.Services;
@@ -34,6 +35,15 @@ namespace My.FederatedGateway
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".AdventureWorks.Session";
+                // Set a short timeout for easy testing.
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
+                options.Cookie.HttpOnly = true;
+            });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddProtectedCookie();
@@ -129,6 +139,7 @@ namespace My.FederatedGateway
             app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseIdentityServer();
+            app.UseSession();
             app.UseMvc();
         }
     }

@@ -1,37 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using My.FederatedGateway.Extensions;
 
 namespace My.FederatedGateway.Services
 {
-    public class MyTokenStore : TokenStore
+    public abstract class SessionTokenStore : ITokenStore
     {
-        public MyTokenStore(IHttpContextAccessor httpContextAccessor, 
-            IProtectedCookieStore protectedCookieStore) : base(httpContextAccessor, protectedCookieStore)
-        {
-        }
-        protected override string Scheme => IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme;
-    }
-    public abstract class TokenStore : ITokenStore
-    {
-        private const string Purpose = "TokenStore.ProtectedStore";
-        private const string CookieName = "_tokens_Protected";
+        private const string SessionKey = "07b4aa2c-9be4-40ec-8b68-232d95b887f2";
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IProtectedCookieStore _protectedCookieStore;
-
-        public TokenStore(
-            IHttpContextAccessor httpContextAccessor,
-            IProtectedCookieStore protectedCookieStore)
+        private ISession Session { get; set; }
+        public SessionTokenStore(
+            IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
-            _protectedCookieStore = protectedCookieStore;
+            Session = _httpContextAccessor.HttpContext.Session;
         }
-        protected abstract string Scheme { get;  }
+        protected abstract string Scheme { get; }
 
         private async Task<Dictionary<string, string>> HarvestOidcDataAsync()
         {
@@ -55,19 +42,14 @@ namespace My.FederatedGateway.Services
         public void HarvestAndStore()
         {
             var tokens = HarvestOidcDataAsync().GetAwaiter().GetResult();
-            var json = JsonConvert.SerializeObject(tokens);
-            _protectedCookieStore.Store(CookieName, json, 30);
+            Session.Set(SessionKey, tokens);
         }
 
         void InternalRead()
         {
             if (_tokens == null)
             {
-                string json;
-                if (_protectedCookieStore.TryRead(CookieName, out json))
-                {
-                    _tokens = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                }
+                _tokens = Session.Get<Dictionary<string, string>>(SessionKey);
             }
         }
 

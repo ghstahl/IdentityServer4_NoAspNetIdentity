@@ -9,6 +9,7 @@ using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using My.FederatedGateway.Areas.Identity.Pages.Account.Models;
@@ -22,15 +23,18 @@ namespace My.FederatedGateway.Areas.Identity.Pages.Account
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
+        private IHttpContextAccessor _httpContextAccessor;
         [BindProperty] public LogoutViewModel LogoutViewModel { get; set; }
 
         public LogoutModel(
+            IHttpContextAccessor httpContextAccessor,
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
             TestUserStore users)
         {
+            _httpContextAccessor = httpContextAccessor;
             _users = users;
 
             _interaction = interaction;
