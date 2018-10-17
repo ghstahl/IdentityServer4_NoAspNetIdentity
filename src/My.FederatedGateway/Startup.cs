@@ -47,9 +47,12 @@ namespace My.FederatedGateway
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddProtectedCookie();
-            services.AddTokenStore();
+            services.AddAuthenticatedInformation();
             services.AddIdentityServer(options =>
                 {
+                    options.UserInteraction.LoginUrl = "/identity/account/login";
+                    options.UserInteraction.LogoutUrl = "/identity/account/logout";
+                    options.UserInteraction.ConsentUrl = "/identity/consent";
                     options.Events.RaiseErrorEvents = true;
                     options.Events.RaiseFailureEvents = true;
                     options.Events.RaiseInformationEvents = true;

@@ -65,7 +65,7 @@ namespace My.FederatedGateway.Areas.Identity.Pages.Account
             {
                 // delete local authentication cookie
                 await HttpContext.SignOutAsync();
-
+                _httpContextAccessor.HttpContext.Session.Clear();
                 // raise the logout event
                 await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
             }
