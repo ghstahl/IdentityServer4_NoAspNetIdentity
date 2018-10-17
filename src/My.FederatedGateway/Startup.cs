@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using My.FederatedGateway.Extensions;
 using My.FederatedGateway.QuickStart;
 
 namespace My.FederatedGateway
@@ -35,6 +36,8 @@ namespace My.FederatedGateway
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddProtectedCookie();
+            services.AddTokenStore();
             services.AddIdentityServer(options =>
                 {
                     options.Events.RaiseErrorEvents = true;
@@ -61,12 +64,35 @@ namespace My.FederatedGateway
                     options.CallbackPath = "/signin-google-poly2324";
                     options.SignedOutCallbackPath = "/signout-callback-google-poly2324";
                     options.RemoteSignOutPath = "/signout-google-poly2324";
-
+                    options.SaveTokens = true;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         
+
+                        NameClaimType = "name",
+                        RoleClaimType = "role"
+                    };
+                })
+                .AddOpenIdConnect("MyUserApp", "Sign-in with MyUserApp", options =>
+                {
+                    options.Authority = "https://accounts.google.com/";
+                    options.ClientId = "660414241377-rfecmn8d8ve7gm2nsveo6trsrh2ie710.apps.googleusercontent.com";
+                    options.ClientSecret = "4AZ8t9AnUXx_3V-SSkKWbdkg";
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+
+                    options.ResponseType = "id_token";
+                    options.CallbackPath = "/signin-google-MyUserApp";
+                    options.SignedOutCallbackPath = "/signout-callback-google-MyUserApp";
+                    options.RemoteSignOutPath = "/signout-google-MyUserApp";
+                    options.SaveTokens = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+
 
                         NameClaimType = "name",
                         RoleClaimType = "role"

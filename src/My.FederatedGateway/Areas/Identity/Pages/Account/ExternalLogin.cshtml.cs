@@ -10,9 +10,11 @@ using IdentityServer4.Stores;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using My.FederatedGateway.QuickStart;
+using My.FederatedGateway.Services;
 
 namespace My.FederatedGateway.Areas.Identity.Pages.Account
 {
@@ -22,17 +24,21 @@ namespace My.FederatedGateway.Areas.Identity.Pages.Account
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
+        private ITokenStore _tokenStore;
+
         public ExternalLoginModel(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            TestUserStore users)
+            TestUserStore users,
+            ITokenStore tokenStore)
         {
             _users = users;
 
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
+            _tokenStore = tokenStore;
         }
 
         public IActionResult OnPost(string provider, string returnUrl = null)
@@ -51,6 +57,7 @@ namespace My.FederatedGateway.Areas.Identity.Pages.Account
 
             return new ChallengeResult(provider, properties);
         }
+
         public async Task<IActionResult> OnGetCallbackAsync()
         { 
             // read external identity from the temporary cookie
@@ -68,7 +75,7 @@ namespace My.FederatedGateway.Areas.Identity.Pages.Account
                 // simply auto-provisions new external user
                 user = AutoProvisionUser(provider, providerUserId, claims);
             }
-
+            _tokenStore.HarvestAndStore();
             // this allows us to collect any additonal claims or properties
             // for the specific prtotocols used and store them in the local auth cookie.
             // this is typically used to store data needed for signout from those protocols.
